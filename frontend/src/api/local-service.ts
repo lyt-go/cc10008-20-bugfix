@@ -1,4 +1,5 @@
 import { MODULE_BY_KEY } from '@/data/modules'
+import { adoptModuleStatus, resetCalibration } from '@/data/calibration-store'
 import { allRows, listRows, resetRows, saveRows } from '@/data/local-store'
 import type { ActionResult, EntryRow, ModuleMeta, OverviewResult, PageResult } from '@/data/types'
 
@@ -53,12 +54,26 @@ export function runAction(key: string, id: number, action: string): ActionResult
   const next = [...rows]
   next[index] = updated
   saveRows(key, next)
+  // 设备分析 / 群组对比的口径数据跟着列表状态走，别让下一次口径写入覆盖页面状态。
+  if (key === 'device' || key === 'cohortcmp') {
+    adoptModuleStatus(key, Number(id), target)
+  }
   return { ok: true, message: `${meta.entity}已${action}，当前状态「${target}」` }
 }
 
 export function resetModule(key: string): PageResult {
   resetRows(key)
   return listEntries(key)
+}
+
+/** 设备分析 / 群组对比的口径数据与列表数据一起回到示例值。 */
+export function resetCalibrationModule(key: string): PageResult {
+  if (key === 'device' || key === 'cohortcmp') {
+    resetRows(key)
+    resetCalibration()
+    return listEntries(key)
+  }
+  return resetModule(key)
 }
 
 export function exportEntries(key: string): { filename: string; content: string } {

@@ -30,6 +30,10 @@ export type PageResult = {
 export type ActionResult = {
   ok: boolean
   message: string
+  /** 被拒绝的请求会带冲突号，回执不会被覆盖 */
+  conflictId?: string
+  /** 本次写入或拒绝留下的回执编号 */
+  receiptId?: number
 }
 
 export type OverviewResult = {
